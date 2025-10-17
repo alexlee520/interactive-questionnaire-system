@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>合作夥伴問卷（優化版）</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #111827;
+    --muted: #6b7280;
+    --panel: #f7f8fa;
+    --panel-strong: #f2f4f7;
+    --border: #e5e7eb;
+    --border-strong: #d1d5db;
+    --accent: #06C167;
+    --accent-600: #05a557;
+    --accent-100: #e9fbf2;
+    --error: #ef4444;
+    --error-focus-ring: rgba(239,68,68,0.15);
+    --focus-ring: rgba(6,193,103,0.22);
+    --shadow-sm: 0 1px 3px rgba(16,24,40,0.08);
+    --shadow-md: 0 6px 18px rgba(16,24,40,0.10);
+    --particle-opacity: 0.12;
+  }
+  [data-theme="dark"] {
+    --bg: #141414;
+    --text: #ffffff;
+    --muted: #B3B3B3;
+    --panel: #282828;
+    --panel-strong: #2f2f2f;
+    --border: #3a3a3a;
+    --border-strong: #4a4a4a;
+    --accent: #06C167;
+    --accent-600: #05a557;
+    --accent-100: rgba(6,193,103,0.15);
+    --error: #f87171;
+    --error-focus-ring: rgba(248,113,113,0.2);
+    --focus-ring: rgba(6,193,103,0.25);
+    --shadow-sm: 0 4px 12px rgba(0,0,0,0.3);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.4);
+    --particle-opacity: 0.15;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+
+  .theme-toggle {
+    position: fixed; top: 20px; right: 20px; z-index: 1001;
+    background: var(--panel);
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.3s ease; box-shadow: var(--shadow-sm);
+  }
+  .theme-toggle:hover { transform: scale(1.1); box-shadow: var(--shadow-md); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .theme-toggle svg { width: 24px; height: 24px; stroke: var(--text); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .theme-toggle .moon-icon { display: none; }
+  [data-theme="dark"] .theme-toggle .sun-icon { display: none; }
+  [data-theme="dark"] .theme-toggle .moon-icon { display: block; }
+
+  .particles-container { position: fixed; inset: 0; pointer-events: none; opacity: var(--particle-opacity); z-index: 0; }
+  .particle { position: absolute; width: 3px; height: 3px; background: var(--accent); border-radius: 50%; animation: float 18s linear infinite; }
+  @keyframes float { 0%{transform:translate(0,0);opacity:0} 10%{opacity:.9} 90%{opacity:.9} 100%{transform:translate(80px,-90vh);opacity:0} }
+
+  .progress-bar { position: fixed; top: 0; left: 0; height: 4px; width: 0%; background: var(--accent); box-shadow: 0 0 10px rgba(6,193,103,0.35); transition: width 0.3s ease; z-index: 1000; }
+
+  .container { position: relative; z-index: 1; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 64px 20px 72px; }
+
+  .question-container { width: 100%; max-width: 760px; opacity: 0; transform: translateY(24px); transition: all 0.45s ease; display: none; }
+  .question-container.active { display: block; opacity: 1; transform: translateY(0); }
+
+  .question-number { color: var(--muted); font-size: .9rem; margin: 0 0 12px; font-weight: 600; letter-spacing: .02em; }
+  .question { color: var(--text); font-size: 2.1rem; line-height: 1.3; font-weight: 800; margin: 0 0 18px; }
+  .subtitle { color: var(--muted); font-size: 1.075rem; line-height: 1.7; margin: 0 0 28px; }
+
+  .hero-icon { width: 120px; height: 120px; margin: 0 auto 20px; background: var(--accent-100); border: 2px solid var(--accent); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); }
+  .hero-icon svg { width: 60px; height: 60px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .input-field { width: 100%; background: var(--bg); border: 2px solid var(--border); color: var(--text); font-size: 1.05rem; padding: 16px 18px; border-radius: 10px; outline: none; transition: border-color .2s, box-shadow .2s; box-shadow: var(--shadow-sm); }
+  .input-field::placeholder { color: var(--muted); opacity: .6; }
+  .input-field:focus { border-color: var(--accent); box-shadow: 0 0 0 6px var(--focus-ring); }
+  .input-field.invalid { border-color: var(--error); }
+  .input-field.invalid:focus { box-shadow: 0 0 0 6px var(--error-focus-ring); }
+
+  .error-message { color: var(--error); font-size: .9rem; margin-top: 8px; font-weight: 500; display: none; }
+  .error-message.visible { display: block; animation: fadeIn 0.3s ease; }
+
+  .options { display: grid; gap: 14px; }
+  .option { background: var(--bg); border: 2px solid var(--border); color: var(--text); padding: 18px 22px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 14px; font-weight: 600; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; box-shadow: var(--shadow-sm); }
+  .option:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border-strong); }
+  .option:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--focus-ring); }
+  .option.selected { background: var(--accent-100); border-color: var(--accent); box-shadow: var(--shadow-md); }
+  .option-letter { width: 34px; height: 34px; border-radius: 8px; background: var(--panel); color: var(--text); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .9rem; flex-shrink: 0; }
+
+  .checkbox-group { display: grid; gap: 12px; }
+  .checkbox-option { background: var(--bg); border: 2px solid var(--border); padding: 14px 18px; border-radius: 12px; display: flex; align-items: center; gap: 12px; font-weight: 600; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; box-shadow: var(--shadow-sm); }
+  .checkbox-option:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border-strong); }
+  .checkbox-option:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--focus-ring); }
+  .checkbox-option.selected { background: var(--accent-100); border-color: var(--accent); }
+  .checkbox-box { width: 24px; height: 24px; border: 2px solid var(--muted); border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: all .18s ease; background: var(--bg); }
+  .checkbox-option.selected .checkbox-box { background: var(--accent); border-color: var(--accent); }
+  .checkbox-box::after { content: '✓'; color: #fff; font-weight: 800; font-size: .95rem; display: none; }
+  .checkbox-option.selected .checkbox-box::after { display: block; animation: checkmark .3s ease; }
+  @keyframes checkmark { 0%{transform:scale(0)} 50%{transform:scale(1.2)} 100%{transform:scale(1)} }
+
+  .controls { margin-top: 26px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { padding: 14px 22px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: transform .15s ease, box-shadow .2s ease, background .2s ease, opacity .2s ease; }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn-primary { background: var(--accent); color: #fff; flex: 1; box-shadow: var(--shadow-sm); }
+  .btn-primary:hover:not(:disabled) { background: var(--accent-600); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+  .btn-primary:active:not(:disabled) { transform: translateY(0); }
+  .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-secondary { background: var(--bg); color: var(--text); border: 2px solid var(--border); box-shadow: var(--shadow-sm); }
+  .btn-secondary:hover { border-color: var(--border-strong); box-shadow: var(--shadow-md); }
+  .hint { color: var(--muted); font-size: .92rem; margin-top: 10px; font-weight: 500; }
+
+  .privacy-text { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; color: var(--muted); font-size: .98rem; line-height: 1.7; margin: 0 0 20px; max-height: 220px; overflow: auto; }
+  .privacy-text strong { color: var(--text); }
+
+  .completion-screen { text-align: center; color: var(--text); animation: fadeIn .5s ease; }
+  .completion-screen h2 { font-size: 2.2rem; margin: 8px 0 10px; font-weight: 900; }
+  .completion-screen .subtitle { font-size: 1.05rem; margin: 0 0 22px; }
+
+  .results { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-top: 16px; text-align: left; box-shadow: var(--shadow-sm); }
+  .result-item { padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .result-item:last-child { border-bottom: none; }
+  .result-label { font-weight: 700; margin-bottom: 6px; color: var(--muted); font-size: .9rem; letter-spacing: .01em; }
+  .result-value { font-size: 1.02rem; color: var(--text); font-weight: 700; }
+
+  .alert-box { background: var(--panel); border: 2px solid var(--border); border-radius: 12px; padding: 18px; margin: 20px 0; display: flex; align-items: start; gap: 14px; }
+  .alert-box.warning { background: rgba(251, 191, 36, 0.1); border-color: #fbbf24; }
+  .alert-box svg { width: 24px; height: 24px; flex-shrink: 0; stroke: #fbbf24; fill: none; stroke-width: 2; }
+  .alert-box-content { flex: 1; }
+  .alert-box-title { font-weight: 700; margin-bottom: 4px; color: var(--text); }
+  .alert-box-text { color: var(--muted); font-size: .95rem; line-height: 1.6; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+
+  .privacy-text::-webkit-scrollbar { width: 8px; }
+  .privacy-text::-webkit-scrollbar-track { background: var(--panel-strong); border-radius: 6px; }
+  .privacy-text::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 6px; }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
+
+  @media (max-width: 768px) {
+    .question { font-size: 1.6rem; }
+    .subtitle { font-size: 1rem; }
+    .input-field { font-size: 1rem; }
+    .option, .checkbox-option { font-size: 1rem; padding: 16px 18px; }
+    .theme-toggle { width: 44px; height: 44px; top: 16px; right: 16px; }
+  }
+</style>
+</head>
+<body>
+  <button class="theme-toggle" type="button" onclick="toggleTheme()" aria-label="切換深色/淺色主題">
+    <svg class="sun-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <svg class="moon-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+
+  <div class="particles-container" id="particles"></div>
+  <div class="progress-bar" id="progressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+
+  <div class="container">
+    <div class="question-container active" id="q0">
+      <div class="hero-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+      <h1 class="question">啟動成長新引擎：加入商家回饋聯盟</h1>
+      <p class="subtitle"><strong>為顧客創造更流暢的體驗,同時賺取高額回饋。</strong><br/>這不僅是一份問卷,更是發掘無限商機的起點。<br/><br/><strong>預計填寫時間:僅需 3 分鐘</strong></p>
+      <div class="controls">
+        <button class="btn btn-primary" type="button" onclick="nextQuestion(0)"><span>立即探索合作機會</span><span>→</span></button>
+      </div>
+    </div>
+
+    <div class="question-container" id="q1">
+      <div class="question-number">第 1 步</div>
+      <h1 class="question">第一步,讓我們認識您。您的商務聯絡信箱是?</h1>
+      <input type="email" class="input-field" id="email" placeholder="example@email.com" autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off" aria-describedby="email-hint email-error"/>
+      <p class="hint" id="email-hint">輸入有效信箱後即可前往下一步(自動轉換全形字元與移除隱藏空白)。</p>
+      <p class="error-message" id="email-error">請輸入有效的電子郵件地址</p>
+      <div class="controls">
+        <button class="btn btn-secondary" type="button" onclick="prevQuestion(1)"><span>←</span><span>返回</span></button>
+        <button class="btn btn-primary" type="button" onclick="nextQuestion(1)" disabled id="btn1"><span>下一步</span><span>→</span></button>
+      </div>
+    </div>
+
+    <div class="question-container" id="q2">
+      <div class="question-number">第 2 步</div>
+      <h1 class="question">貴公司的寶號是?</h1>
+      <input type="text" class="input-field" id="businessName" placeholder="請輸入完整商家名稱" autocomplete="organization" aria-describedby="business-hint"/>
+      <p class="hint" id="business-hint">讓我們知道該如何稱呼您。</p>
+      <div class="controls">
+        <button class="btn btn-secondary" type="button" onclick="prevQuestion(2)"><span>←</span><span>上一步</span></button>
+        <button class="btn btn-primary" type="button" onclick="nextQuestion(2)" disabled id="btn2"><span>下一步</span><span>→</span></button>
+      </div>
+    </div>
+
+    <div class="question-container" id="q3">
+      <div class="question-number">第 3 步</div>
+      <h1 class="question">個人資料使用同意</h1>
+      <div class="privacy-text" role="region" aria-label="個資說明" tabindex="0">
+        <p><strong>個人資料蒐集、處理及利用告知事項</strong></p><br/>
+        <p>為提供您更完善的服務,我們需要蒐集您的個人資料。您所提供的個人資料,將依據個人資料保護法及相關法令規定,僅用於以下目的:</p><br/>
+        <ul style="padding-left: 20px;"><li>合作夥伴關係建立與維護</li><li>商業服務諮詢與推廣</li><li>客戶管理與服務</li><li>行銷業務(包含但不限於廣告行銷、問卷調查等)</li></ul><br/>
+        <p>您可以選擇是否提供個人資料,若您選擇不提供,可能影響您參與本計畫的權益。</p>
+      </div>
+      <div class="options" role="radiogroup" aria-label="個人資料使用同意">
+        <label class="option"><input type="radio" name="privacyConsent" value="同意" class="sr-only" onchange="handlePrivacyChange(this)"><span class="option-letter">✓</span><span>我同意以上個人資料使用條款</span></label>
+        <label class="option"><input type="radio" name="privacyConsent" value="不同意" class="sr-only" onchange="handlePrivacyChange(this)"><span class="option-letter">✗</span><span>我不同意</span></label>
+      </div>
+      <div class="controls"><button class="btn btn-secondary" type="button" onclick="prevQuestion(3)"><span>←</span><span>上一步</span></button></div>
+    </div>
+
+    <div class="question-container" id="q3-reject">
+      <div class="alert-box warning">
+        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div class="alert-box-content">
+          <div class="alert-box-title">無法繼續問卷</div>
+          <div class="alert-box-text">很抱歉,我們需要您同意個人資料使用條款才能繼續。這是為了確保我們能夠合法且安全地處理您的資料,為您提供最佳服務。</div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn btn-secondary" type="button" onclick="showCard('q3', 'q3-reject')"><span>←</span><span>重新考慮</span></button>
+        <button class="btn btn-primary" type="button" onclick="showCard('q0', 'q3-reject')"><span>返回首頁</span></button>
+      </div>
+    </div>
+
+    <div class="question-container" id="q4">
+      <div class="question-number">第 4 步</div>
+      <h1 class="question">您對「商家回饋聯盟」的第一印象如何?</h1>
+      <div class="options" role="radiogroup" aria-label="合作意向">
+        <label class="option"><input type="radio" name="intention" value="interested" class="sr-only" onchange="handleIntentionChange(this)"><span class="option-letter">A</span><span>聽起來很棒!我想深入了解合作細節。</span></label>
+        <label class="option"><input type="radio" name="intention" value="more-info" class="sr-only" onchange="handleIntentionChange(this)"><span class="option-letter">B</span><span>我想與專人聊聊,客製最適合我的方案。</span></label>
+        <label class="option"><input type="radio" name="intention" value="not-interested" class="sr-only" onchange="handleIntentionChange(this)"><span class="option-letter">C</span><span>暫不考慮,但我願意分享一些想法。</span></label>
+      </div>
+      <div class="controls"><button class="btn btn-secondary" type="button" onclick="prevQuestion(4)"><span>←</span><span>上一步</span></button></div>
+    </div>
+
+    <div class="question-container" id="q5">
+      <div class="question-number">第 5 步</div>
+      <h1 class="question">我們該如何稱呼您?</h1>
+      <input type="text" class="input-field" id="contactName" placeholder="請輸入您的姓名" autocomplete="name" aria-describedby="name-hint"/>
+      <p class="hint" id="name-hint">請提供您的真實姓名,以便我們更好地為您服務。</p>
+      <div class="controls">
+        <button class="btn btn-secondary" type="button" onclick="prevQuestion(5)"><span>←</span><span>上一步</span></button>
+        <button class="btn btn-primary" type="button" onclick="nextQuestion(5)" disabled id="btn5"><span>下一步</span><span>→</span></button>
+      </div>
+    </div>
+
+    <div class="question-container" id="q6">
+      <div class="question-number">第 6 步</div>
+      <h1 class="question">請留下您的聯絡電話</h1>
+      <input type="tel" class="input-field" id="contactPhone" placeholder="09XX-XXX-XXX" autocomplete="tel" inputmode="tel" aria-describedby="phone-hint phone-error"/>
+      <p class="hint" id="phone-hint">合作顧問將盡速與您聯繫,開啟雙贏契機。</p>
+      <p class="error-message" id="phone-error">請輸入有效的台灣手機號碼(09開頭,10碼)</p>
+      <div class="controls">
+        <button class="btn btn-secondary" type="button" onclick="prevQuestion(6)"><span>←</span><span>上一步</span></button>
+        <button class="btn btn-primary" type="button" onclick="nextQuestion(6)" disabled id="btn6"><span>下一步</span><span>→</span></button>
+      </div>
+    </div>
+
+    <div class="question-container" id="q7">
+      <div class="question-number">第 7 步</div>
+      <h1 class="question">很高興您找到了我們!您是從哪裡得知此計畫?</h1>
+      <div class="checkbox-group" role="group" aria-label="資訊來源">
+        <label class="checkbox-option"><input type="checkbox" name="infoSource" value="Facebook 廣告" class="sr-only" onchange="handleCheckboxChange(this)"><div class="checkbox-box"></div><span>Facebook 廣告</span></label>
+        <label class="checkbox-option"><input type="checkbox" name="infoSource" value="Google 搜尋" class="sr-only" onchange="handleCheckboxChange(this)"><div class="checkbox-box"></div><span>Google 搜尋</span></label>
+        <label class="checkbox-option"><input type="checkbox" name="infoSource" value="Instagram" class="sr-only" onchange="handleCheckboxChange(this)"><div class="checkbox-box"></div><span>Instagram</span></label>
+        <label class="checkbox-option"><input type="checkbox" name="infoSource" value="朋友推薦" class="sr-only" onchange="handleCheckboxChange(this)"><div class="checkbox-box"></div><span>朋友推薦</span></label>
+        <label class="checkbox-option"><input type="checkbox" name="infoSource" value="Email 通知" class="sr-only" onchange="handleCheckboxChange(this)"><div class="checkbox-box"></div><span>Email 通知</span></label>
+        <label class="checkbox-option"><input type="checkbox" name="infoSource" value="官方網站" class="sr-only" onchange="handleCheckboxChange(this)"><div class="checkbox-box"></div><span>官方網站</span></label>
+        <label class="checkbox-option"><input type="checkbox" name="infoSource" value="其他" class="sr-only" onchange="handleCheckboxChange(this)"><div class="checkbox-box"></div><span>其他</span></label>
+      </div>
+      <p class="hint">可複選,幫助我們了解最有效的推廣管道。</p>
+      <div class="controls">
+        <button class="btn btn-secondary" type="button" onclick="prevQuestion(7)"><span>←</span><span>上一步</span></button>
+        <button class="btn btn-primary" type="button" onclick="nextQuestion(7)" disabled id="btn7"><span>下一步</span><span>→</span></button>
+      </div>
+    </div>
+
+    <div class="question-container" id="q8">
+      <div class="question-number">第 8 步</div>
+      <h1 class="question">您的推薦意願調查</h1>
+      <p class="subtitle">您是否願意將本計畫推薦給其他商業夥伴?</p>
+      <div class="options" role="radiogroup" aria-label="推薦意願">
+        <label class="option"><input type="radio" name="referral" value="非常願意" class="sr-only" onchange="handleOptionChange(this, 8, true)"><span class="option-letter">A</span><span>非常願意 - 我會積極推薦</span></label>
+        <label class="option"><input type="radio" name="referral" value="願意" class="sr-only" onchange="handleOptionChange(this, 8, true)"><span class="option-letter">B</span><span>願意 - 如果有機會會推薦</span></label>
+        <label class="option"><input type="radio" name="referral" value="中立" class="sr-only" onchange="handleOptionChange(this, 8, true)"><span class="option-letter">C</span><span>中立 - 視情況而定</span></label>
+        <label class="option"><input type="radio" name="referral" value="不太願意" class="sr-only" onchange="handleOptionChange(this, 8, true)"><span class="option-letter">D</span><span>不太願意</span></label>
+      </div>
+      <div class="controls"><button class="btn btn-secondary" type="button" onclick="prevQuestion(8)"><span>←</span><span>上一步</span></button></div>
+    </div>
+
+    <div class="question-container" id="q9">
+      <div class="question-number">最後一步</div>
+      <h1 class="question">您的寶貴意見,是我們進步的動力。</h1>
+      <p class="subtitle">請問您暫不考慮的主要原因是?</p>
+      <div class="options" role="radiogroup" aria-label="不考慮原因">
+        <label class="option"><input type="radio" name="notInterested" value="已有合作對象" class="sr-only" onchange="handleOptionChange(this, 9, true)"><span class="option-letter">A</span><span>已有合作對象</span></label>
+        <label class="option"><input type="radio" name="notInterested" value="不符合營業需求" class="sr-only" onchange="handleOptionChange(this, 9, true)"><span class="option-letter">B</span><span>不符合營業需求</span></label>
+        <label class="option"><input type="radio" name="notInterested" value="費用考量" class="sr-only" onchange="handleOptionChange(this, 9, true)"><span class="option-letter">C</span><span>費用考量</span></label>
+        <label class="option"><input type="radio" name="notInterested" value="目前時間不合適" class="sr-only" onchange="handleOptionChange(this, 9, true)"><span class="option-letter">D</span><span>目前時間不合適</span></label>
+        <label class="option"><input type="radio" name="notInterested" value="不了解服務內容" class="sr-only" onchange="handleOptionChange(this, 9, true)"><span class="option-letter">E</span><span>不了解服務內容</span></label>
+        <label class="option"><input type="radio" name="notInterested" value="其他原因" class="sr-only" onchange="handleOptionChange(this, 9, true)"><span class="option-letter">F</span><span>其他原因</span></label>
+      </div>
+      <div class="controls"><button class="btn btn-secondary" type="button" onclick="prevQuestion(9)"><span>←</span><span>上一步</span></button></div>
+    </div>
+
+    <div class="question-container" id="completionMoreInfo">
+      <div class="completion-screen">
+        <div class="hero-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg></div>
+        <h2>合作的旅程,即將啟程!</h2>
+        <p class="subtitle"><strong>感謝您踏出第一步!</strong><br/>我們的合作顧問正在為您準備專屬的合作藍圖,預計 1–2 個工作天內與您聯繫。</p>
+        <div class="results" id="resultsMoreInfo"></div>
+      </div>
+    </div>
+
+    <div class="question-container" id="completion">
+      <div class="completion-screen">
+        <div class="hero-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <h2>感謝您的寶貴回饋!</h2>
+        <p class="subtitle">您的意見對我們至關重要,是我們持續優化服務的基石。</p>
+        <div class="results" id="results"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ===== 主題管理 =====
+  (function initTheme() {
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved) {
+        document.documentElement.setAttribute('data-theme', saved);
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch(e) {
+      console.warn('Theme initialization error:', e);
+    }
+  })();
+
+  window.toggleTheme = function() {
+    const root = document.documentElement;
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    const next = isDark ? '' : 'dark';
+    if (next) {
+      root.setAttribute('data-theme', next);
+    } else {
+      root.removeAttribute('data-theme');
+    }
+    try {
+      localStorage.setItem('theme', next);
+    } catch(e) {
+      console.warn('Theme save error:', e);
+    }
+  };
+
+  // ===== DOM Ready =====
+  document.addEventListener('DOMContentLoaded', function() {
+    // 背景粒子
+    (function createParticles() {
+      const container = document.getElementById('particles');
+      const count = 36;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.bottom = Math.random() * 100 + 'vh';
+        p.style.animationDelay = (Math.random() * 18) + 's';
+        p.style.animationDuration = (14 + Math.random() * 10) + 's';
+        container.appendChild(p);
+      }
+    })();
+
+    // ===== 問卷狀態管理 =====
+    const state = {
+      currentStep: 0,
+      totalSteps: 0,
+      userPath: '',
+      answers: {
+        email: '',
+        businessName: '',
+        privacyConsent: '',
+        intention: '',
+        contactName: '',
+        contactPhone: '',
+        infoSources: new Set(),
+        referralWillingness: '',
+        notInterestedReason: ''
+      }
+    };
+
+    // 各路徑的步驟映射
+    const pathSteps = {
+      interested: [0, 1, 2, 3, 4, 5, 6, 7, 8],  // 9步
+      'more-info': [0, 1, 2, 3, 4],  // 5步
+      'not-interested': [0, 1, 2, 3, 4, 9]  // 6步
+    };
+
+    // ===== 進度條管理 =====
+    function updateProgress() {
+      if (state.totalSteps === 0) {
+        setProgressBar(0);
+        return;
+      }
+      
+      let currentIndex = 0;
+      if (state.userPath && pathSteps[state.userPath]) {
+        currentIndex = pathSteps[state.userPath].indexOf(state.currentStep);
+        if (currentIndex === -1) currentIndex = 0;
+      }
+      
+      const percent = (currentIndex / (state.totalSteps - 1)) * 100;
+      setProgressBar(Math.min(100, Math.max(0, percent)));
+    }
+
+    function setProgressBar(percent) {
+      const bar = document.getElementById('progressBar');
+      bar.style.width = percent + '%';
+      bar.setAttribute('aria-valuenow', Math.round(percent));
+    }
+
+    // ===== 卡片切換 =====
+    window.showCard = function(nextId, currentId) {
+      const currentCard = document.getElementById(currentId);
+      if (currentCard) {
+        currentCard.classList.remove('active');
+      }
+      
+      setTimeout(() => {
+        const nextCard = document.getElementById(nextId);
+        if (nextCard) {
+          nextCard.classList.add('active');
+          
+          // 更新當前步驟
+          const stepNum = parseInt(nextId.replace('q', ''));
+          if (!isNaN(stepNum)) {
+            state.currentStep = stepNum;
+            updateProgress();
+          }
+          
+          // 聚焦到第一個可聚焦元素
+          const focusable = nextCard.querySelector('input, button, [tabindex]:not([tabindex="-1"])');
+          if (focusable) {
+            setTimeout(() => focusable.focus(), 100);
+          }
+        }
+      }, 220);
+    };
+
+    // ===== 導航函數 =====
+    window.nextQuestion = function(current) {
+      const currentId = 'q' + current;
+      
+      // 保存答案
+      if (current === 1) {
+        state.answers.email = normalizeEmail(document.getElementById('email').value.trim());
+      } else if (current === 2) {
+        state.answers.businessName = document.getElementById('businessName').value.trim();
+      } else if (current === 5) {
+        state.answers.contactName = document.getElementById('contactName').value.trim();
+      } else if (current === 6) {
+        state.answers.contactPhone = document.getElementById('contactPhone').value.trim();
+      } else if (current === 7) {
+        // 資訊來源已在 checkbox change 時保存
+      }
+      
+      showCard('q' + (current + 1), currentId);
+    };
+
+    window.prevQuestion = function(current) {
+      const currentId = 'q' + current;
+      let prevQ = current - 1;
+      
+      // 特殊路徑處理
+      if (current === 5 || current === 9) {
+        prevQ = 4;
+      }
+      
+      showCard('q' + prevQ, currentId);
+    };
+
+    // ===== 隱私同意處理 =====
+    window.handlePrivacyChange = function(radio) {
+      const value = radio.value;
+      const questionContainer = radio.closest('.question-container');
+      
+      // 更新樣式
+      questionContainer.querySelectorAll('.option').forEach(label => {
+        label.classList.remove('selected');
+      });
+      radio.parentElement.classList.add('selected');
+      
+      state.answers.privacyConsent = value;
+      
+      setTimeout(() => {
+        if (value === '同意') {
+          nextQuestion(3);
+        } else {
+          // 不同意則顯示警告頁面
+          showCard('q3-reject', 'q3');
+        }
+      }, 350);
+    };
+
+    // ===== 意向分流處理 =====
+    window.handleIntentionChange = function(radio) {
+      const intention = radio.value;
+      const questionContainer = radio.closest('.question-container');
+      
+      // 更新樣式
+      questionContainer.querySelectorAll('.option').forEach(label => {
+        label.classList.remove('selected');
+      });
+      radio.parentElement.classList.add('selected');
+      
+      state.userPath = intention;
+      state.answers.intention = intention;
+      
+      setTimeout(() => {
+        if (intention === 'interested') {
+          state.totalSteps = 9;
+          showCard('q5', 'q4');
+        } else if (intention === 'more-info') {
+          state.totalSteps = 5;
+          showMoreInfoCompletion();
+        } else if (intention === 'not-interested') {
+          state.totalSteps = 6;
+          showCard('q9', 'q4');
+        }
+      }, 350);
+    };
+
+    // ===== 選項處理 =====
+    window.handleOptionChange = function(radio, currentStep, isFinalStep = false) {
+      const value = radio.value;
+      const questionContainer = radio.closest('.question-container');
+      
+      // 更新樣式
+      questionContainer.querySelectorAll('.option').forEach(label => {
+        label.classList.remove('selected');
+      });
+      radio.parentElement.classList.add('selected');
+      
+      // 保存答案
+      const qid = questionContainer.id;
+      if (qid === 'q8') {
+        state.answers.referralWillingness = value;
+      } else if (qid === 'q9') {
+        state.answers.notInterestedReason = value;
+      }
+      
+      // 延遲後執行下一步
+      setTimeout(() => {
+        if (isFinalStep) {
+          submitForm();
+        } else {
+          nextQuestion(currentStep);
+        }
+      }, 350);
+    };
+
+    // ===== 複選框處理 =====
+    window.handleCheckboxChange = function(checkbox) {
+      checkbox.parentElement.classList.toggle('selected');
+      
+      if (checkbox.checked) {
+        state.answers.infoSources.add(checkbox.value);
+      } else {
+        state.answers.infoSources.delete(checkbox.value);
+      }
+      
+      document.getElementById('btn7').disabled = (state.answers.infoSources.size === 0);
+    };
+
+    // ===== 表單提交 =====
+    window.submitForm = function() {
+      const currentCard = document.querySelector('.question-container.active');
+      if (currentCard) {
+        currentCard.classList.remove('active');
+      }
+      
+      setTimeout(() => {
+        displayResults();
+        
+        // 發送數據到後端（示例）
+        sendFormData();
+        
+        showCard('completion', 'q' + state.currentStep);
+        state.currentStep = state.totalSteps;
+        setProgressBar(100);
+      }, 220);
+    };
+
+    // ===== 發送表單數據 =====
+    function sendFormData() {
+      const formData = {
+        email: state.answers.email,
+        businessName: state.answers.businessName,
+        privacyConsent: state.answers.privacyConsent,
+        intention: state.answers.intention,
+        path: state.userPath,
+        timestamp: new Date().toISOString()
+      };
+      
+      // 根據路徑添加額外資料
+      if (state.userPath === 'interested') {
+        formData.contactName = state.answers.contactName;
+        formData.contactPhone = state.answers.contactPhone;
+        formData.infoSources = Array.from(state.answers.infoSources);
+        formData.referralWillingness = state.answers.referralWillingness;
+      } else if (state.userPath === 'not-interested') {
+        formData.notInterestedReason = state.answers.notInterestedReason;
+      }
+      
+      // 模擬發送到後端
+      console.log('📤 提交表單數據:', formData);
+      
+      // 實際實作時,取消註解以下代碼:
+      /*
+      fetch('/api/submit-survey', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('✅ 提交成功:', data);
+      })
+      .catch(error => {
+        console.error('❌ 提交失敗:', error);
+      });
+      */
+    }
+
+    // ===== 顯示 more-info 完成頁 =====
+    function showMoreInfoCompletion() {
+      showCard('completionMoreInfo', 'q4');
+      
+      const html = `
+        <div class="result-item">
+          <div class="result-label">商務聯絡信箱</div>
+          <div class="result-value">${escapeHtml(state.answers.email)}</div>
+        </div>
+        <div class="result-item">
+          <div class="result-label">商家名稱</div>
+          <div class="result-value">${escapeHtml(state.answers.businessName)}</div>
+        </div>
+        <div class="result-item">
+          <div class="result-label">合作意向</div>
+          <div class="result-value">希望與專人洽談</div>
+        </div>`;
+      
+      document.getElementById('resultsMoreInfo').innerHTML = html;
+      
+      // 發送數據
+      sendFormData();
+      
+      // 設置進度為100%
+      state.currentStep = state.totalSteps;
+      setProgressBar(100);
+    }
+
+    // ===== 顯示完成結果 =====
+    function displayResults() {
+      const infoSourcesText = state.answers.infoSources.size > 0 
+        ? Array.from(state.answers.infoSources).map(escapeHtml).join(', ') 
+        : '未提供';
+      
+      let html = `
+        <div class="result-item">
+          <div class="result-label">商務聯絡信箱</div>
+          <div class="result-value">${escapeHtml(state.answers.email)}</div>
+        </div>
+        <div class="result-item">
+          <div class="result-label">商家名稱</div>
+          <div class="result-value">${escapeHtml(state.answers.businessName)}</div>
+        </div>
+        <div class="result-item">
+          <div class="result-label">個人資料使用同意</div>
+          <div class="result-value">${escapeHtml(state.answers.privacyConsent)}</div>
+        </div>`;
+      
+      if (state.userPath === 'interested') {
+        html += `
+          <div class="result-item">
+            <div class="result-label">聯絡人姓名</div>
+            <div class="result-value">${escapeHtml(state.answers.contactName)}</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">聯絡電話</div>
+            <div class="result-value">${escapeHtml(state.answers.contactPhone)}</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">活動資訊來源</div>
+            <div class="result-value">${infoSourcesText}</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">推薦意願</div>
+            <div class="result-value">${escapeHtml(state.answers.referralWillingness)}</div>
+          </div>`;
+      } else if (state.userPath === 'not-interested') {
+        html += `
+          <div class="result-item">
+            <div class="result-label">暫不考慮原因</div>
+            <div class="result-value">${escapeHtml(state.answers.notInterestedReason)}</div>
+          </div>`;
+      }
+      
+      document.getElementById('results').innerHTML = html;
+    }
+
+    // ===== Email 驗證 =====
+    const emailEl = document.getElementById('email');
+    const emailError = document.getElementById('email-error');
+    const btn1 = document.getElementById('btn1');
+    
+    emailEl.addEventListener('input', function() {
+      const normalized = normalizeEmail(this.value);
+      const isValid = validateEmail(normalized);
+      
+      btn1.disabled = !isValid;
+      
+      if (this.value.length > 0) {
+        if (!isValid) {
+          this.classList.add('invalid');
+          emailError.classList.add('visible');
+        } else {
+          this.classList.remove('invalid');
+          emailError.classList.remove('visible');
+        }
+      } else {
+        this.classList.remove('invalid');
+        emailError.classList.remove('visible');
+      }
+    });
+    
+    emailEl.addEventListener('keypress', e => {
+      if (e.key === 'Enter' && !btn1.disabled) {
+        nextQuestion(1);
+      }
+    });
+
+    // ===== 商家名稱驗證 =====
+    const businessNameEl = document.getElementById('businessName');
+    const btn2 = document.getElementById('btn2');
+    
+    businessNameEl.addEventListener('input', function() {
+      btn2.disabled = this.value.trim().length < 2;
+    });
+    
+    businessNameEl.addEventListener('keypress', e => {
+      if (e.key === 'Enter' && !btn2.disabled) {
+        nextQuestion(2);
+      }
+    });
+
+    // ===== 聯絡人驗證 =====
+    const contactNameEl = document.getElementById('contactName');
+    const btn5 = document.getElementById('btn5');
+    
+    contactNameEl.addEventListener('input', function() {
+      btn5.disabled = this.value.trim().length < 2;
+    });
+    
+    contactNameEl.addEventListener('keypress', e => {
+      if (e.key === 'Enter' && !btn5.disabled) {
+        nextQuestion(5);
+      }
+    });
+
+    // ===== 電話驗證 =====
+    const contactPhoneEl = document.getElementById('contactPhone');
+    const phoneError = document.getElementById('phone-error');
+    const btn6 = document.getElementById('btn6');
+    
+    contactPhoneEl.addEventListener('input', function() {
+      const phone = this.value.replace(/\D/g, '');
+      const isValid = validatePhone(phone);
+      
+      btn6.disabled = !isValid;
+      
+      if (this.value.length > 0) {
+        if (!isValid && phone.length > 0) {
+          this.classList.add('invalid');
+          phoneError.classList.add('visible');
+        } else {
+          this.classList.remove('invalid');
+          phoneError.classList.remove('visible');
+        }
+      } else {
+        this.classList.remove('invalid');
+        phoneError.classList.remove('visible');
+      }
+    });
+    
+    contactPhoneEl.addEventListener('keypress', e => {
+      if (e.key === 'Enter' && !btn6.disabled) {
+        nextQuestion(6);
+      }
+    });
+
+    // ===== 工具函數 =====
+    function normalizeEmail(value) {
+      if (!value) return value;
+      
+      // 全形轉半形
+      let normalized = value.replace(/[\uFF01-\uFF5E]/g, ch => 
+        String.fromCharCode(ch.charCodeAt(0) - 0xFEE0)
+      );
+      
+      // 全形空格轉半形
+      normalized = normalized.replace(/\u3000/g, ' ');
+      
+      // 移除所有空白
+      normalized = normalized.replace(/\s+/g, '');
+      
+      return normalized.toLowerCase();
+    }
+
+    function validateEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
+    }
+
+    function validatePhone(phone) {
+      // 台灣手機格式: 09開頭,10碼
+      return /^09\d{8}$/.test(phone);
+    }
+
+    function escapeHtml(str) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+        '/': '&#x2F;',
+        '`': '&#x60;',
+        '=': '&#x3D;'
+      };
+      return String(str).replace(/[&<>"'`=\/]/g, s => map[s]);
+    }
+
+    // ===== 初始化 =====
+    updateProgress();
+  });
+})();
+</script>
+</body>
+</html>
