@@ -87,10 +87,14 @@ Preferred communication style: Simple, everyday language.
 
 **Google Sheets Integration:**
 - Uses Google Sheets API v4 for data export
-- OAuth2 authentication via Replit Connectors
+- OAuth2 authentication via Replit Connectors (connection ID: conn_google-sheet_01K7RTWQZ57MHXGSW9BYDF5M9P)
 - Asynchronous append operations to prevent blocking responses
 - Automatic token refresh handling
-- Function: `appendResponseToSheet()` handles data sync
+- Spreadsheet auto-creation: "Uber 店家新用戶獎勵專案 - 問卷回應"
+- Header formatting: Black background, white text, bold, centered
+- Function: `appendResponseToSheet()` in server/googleSheets.ts handles data sync
+- Data mapping: Taiwan timezone formatting, arrays to comma-separated strings, enum values to Chinese labels
+- Fixed bug: Uses `includeSpreadsheetInResponse: true` to correctly retrieve sheetId
 
 **Replit Platform Services:**
 - Replit Connectors for OAuth management
