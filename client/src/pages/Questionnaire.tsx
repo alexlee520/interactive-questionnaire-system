@@ -70,7 +70,7 @@ export default function Questionnaire() {
       <ProgressBar progress={progress} />
       
       <div className="relative z-[1] min-h-screen flex items-center justify-center px-5 py-16">
-        <div className="w-full max-width-[760px]">
+        <div className="w-full max-w-[760px] mx-auto">
           {currentStep === 0 && <WelcomeStep onNext={nextStep} />}
           {currentStep === 1 && (
             <EmailStep
