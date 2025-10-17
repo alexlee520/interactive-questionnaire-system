@@ -77,15 +77,20 @@ async function findOrCreateSpreadsheet() {
           title: SHEET_NAME
         }
       }]
-    },
-    includeSpreadsheetInResponse: true
+    }
   });
 
   const spreadsheetId = createResponse.data.spreadsheetId!;
-  const sheetId = createResponse.data.sheets?.[0]?.properties?.sheetId;
+  
+  // Get sheet details to retrieve sheetId
+  const getResponse = await sheets.spreadsheets.get({
+    spreadsheetId: spreadsheetId
+  });
+  
+  const sheetId = getResponse.data.sheets?.[0]?.properties?.sheetId;
   
   if (sheetId === undefined) {
-    throw new Error('Failed to get sheetId from create response');
+    throw new Error('Failed to get sheetId from spreadsheet');
   }
 
   // Set up headers
