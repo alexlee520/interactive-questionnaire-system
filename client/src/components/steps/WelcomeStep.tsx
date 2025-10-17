@@ -19,11 +19,11 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
         </h1>
         
         <p className="text-muted-foreground text-[1.075rem] leading-[1.7] mb-7">
-          <strong className="text-foreground">為顧客創造更流暢的體驗,同時賺取高額回饋。</strong>
+          <strong className="text-foreground">讓顧客更滿意，你的營收也更高！</strong>
           <br />
-          這不僅是一份問卷,更是發掘無限商機的起點。
+          只要 1 分鐘，一起來探索更多商機吧～
           <br /><br />
-          <strong className="text-foreground">預計填寫時間:僅需 1 分鐘</strong>
+          <strong className="text-foreground">超簡單！只要 1 分鐘</strong>
         </p>
         
         <div className="w-full flex gap-3 flex-wrap mt-[26px]">
@@ -33,7 +33,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
             className="flex-1 bg-primary text-primary-foreground px-[22px] py-[14px] rounded-[10px] text-base font-extrabold cursor-pointer flex items-center justify-center gap-2.5 transition-all duration-150 shadow-sm hover:bg-primary/90 hover:-translate-y-px hover:shadow-md active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             data-testid="button-start"
           >
-            <span>立即探索合作機會</span>
+            <span>開始填寫</span>
             <span>→</span>
           </button>
         </div>

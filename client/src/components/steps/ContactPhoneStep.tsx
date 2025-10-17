@@ -34,7 +34,7 @@ export function ContactPhoneStep({ value, onNext, onPrev, onChange }: ContactPho
   return (
     <StepContainer questionNumber="第 6 步">
       <h1 className="text-foreground text-[2.1rem] md:text-[2.1rem] leading-[1.3] font-extrabold mb-[18px]">
-        請留下您的聯絡電話
+        留個電話給我們吧！
       </h1>
       
       <input
@@ -54,7 +54,7 @@ export function ContactPhoneStep({ value, onNext, onPrev, onChange }: ContactPho
       />
       
       <p className="text-muted-foreground text-[0.92rem] mt-2.5 font-medium" id="phone-hint">
-        合作顧問將盡速與您聯繫,開啟雙贏契機。
+        我們會盡快跟您聯絡的！
       </p>
       
       {error && (

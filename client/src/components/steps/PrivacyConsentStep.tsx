@@ -22,7 +22,7 @@ export function PrivacyConsentStep({ value, onNext, onPrev, onReject, onChange }
   return (
     <StepContainer questionNumber="第 3 步">
       <h1 className="text-foreground text-[2.1rem] md:text-[2.1rem] leading-[1.3] font-extrabold mb-[18px]">
-        個人資料使用同意
+        關於您的資料使用
       </h1>
       
       <div 
@@ -31,15 +31,15 @@ export function PrivacyConsentStep({ value, onNext, onPrev, onReject, onChange }
         aria-label="個資說明"
         tabIndex={0}
       >
-        <p><strong className="text-foreground">個人資料蒐集、處理及利用告知事項</strong></p><br/>
-        <p>為提供您更完善的服務,我們需要蒐集您的個人資料。您所提供的個人資料,將依據個人資料保護法及相關法令規定,僅用於以下目的:</p><br/>
+        <p><strong className="text-foreground">您的資料我們會這樣使用</strong></p><br/>
+        <p>為了給您最好的服務，我們會蒐集您填寫的資料。這些資料會依照個資法規定，只用在以下用途：</p><br/>
         <ul className="pl-5 list-disc">
-          <li>合作夥伴關係建立與維護</li>
-          <li>商業服務諮詢與推廣</li>
-          <li>客戶管理與服務</li>
-          <li>行銷業務(包含但不限於廣告行銷、問卷調查等)</li>
+          <li>建立合作關係</li>
+          <li>提供商業服務諮詢</li>
+          <li>客戶服務</li>
+          <li>相關活動通知</li>
         </ul><br/>
-        <p>您可以選擇是否提供個人資料,若您選擇不提供,可能影響您參與本計畫的權益。</p>
+        <p>您可以選擇是否提供資料，但如果不提供可能會影響您參加這個專案的權益喔。</p>
       </div>
       
       <div className="grid gap-3.5" role="radiogroup" aria-label="個人資料使用同意">

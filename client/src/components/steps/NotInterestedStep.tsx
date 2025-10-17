@@ -26,11 +26,11 @@ export function NotInterestedStep({ value, onNext, onPrev, onChange }: NotIntere
   return (
     <StepContainer questionNumber="最後一步">
       <h1 className="text-foreground text-[2.1rem] md:text-[2.1rem] leading-[1.3] font-extrabold mb-[18px]">
-        您的寶貴意見,是我們進步的動力。
+        沒關係！可以告訴我們原因嗎？
       </h1>
       
       <p className="text-muted-foreground text-[1.075rem] leading-[1.7] mb-7">
-        請問您暫不考慮的主要原因是?
+        您的想法對我們很重要，幫助我們做得更好
       </p>
       
       <div className="grid gap-3.5" role="radiogroup" aria-label="不考慮原因">

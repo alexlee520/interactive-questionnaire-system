@@ -41,9 +41,9 @@ export function InfoSourceStep({ value, onNext, onPrev, onChange }: InfoSourceSt
   };
 
   return (
-    <StepContainer questionNumber="第 7 步">
+    <StepContainer questionNumber="第 8 步">
       <h1 className="text-foreground text-[2.1rem] md:text-[2.1rem] leading-[1.3] font-extrabold mb-[18px]">
-        很高興您找到了我們!您是從哪裡得知此計畫?
+        好奇～您是從哪裡知道我們的？
       </h1>
       
       <div className="grid gap-3" role="group" aria-label="資訊來源">
@@ -81,7 +81,7 @@ export function InfoSourceStep({ value, onNext, onPrev, onChange }: InfoSourceSt
       </div>
       
       <p className="text-muted-foreground text-[0.92rem] mt-2.5 font-medium">
-        可複選,幫助我們了解最有效的推廣管道。
+        可以複選喔！這能幫助我們做得更好
       </p>
       
       <NavigationButtons

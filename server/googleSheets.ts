@@ -91,7 +91,7 @@ async function findOrCreateSpreadsheet() {
   // Set up headers
   await sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: `${SHEET_NAME}!A1:J1`,
+    range: `${SHEET_NAME}!A1:K1`,
     valueInputOption: 'RAW',
     requestBody: {
       values: [[
@@ -102,6 +102,7 @@ async function findOrCreateSpreadsheet() {
         '合作意向',
         '聯絡人姓名',
         '聯絡電話',
+        '統一編號',
         '資訊來源',
         '推薦意願',
         '不考慮原因'
@@ -141,7 +142,7 @@ async function findOrCreateSpreadsheet() {
               sheetId: sheetId,
               dimension: 'COLUMNS',
               startIndex: 0,
-              endIndex: 10
+              endIndex: 11
             }
           }
         }
@@ -181,6 +182,7 @@ export async function appendResponseToSheet(response: InsertResponse & { submitt
         response.intention === 'not_sure' ? '不確定' : '沒興趣',
       response.contactName || '',
       response.contactPhone || '',
+      response.taxId || '',
       infoSourceText || '',
       response.referral === 'yes' ? '願意推薦' : 
         response.referral === 'no' ? '不願意推薦' : '',
@@ -189,7 +191,7 @@ export async function appendResponseToSheet(response: InsertResponse & { submitt
 
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: `${SHEET_NAME}!A:J`,
+      range: `${SHEET_NAME}!A:K`,
       valueInputOption: 'RAW',
       requestBody: {
         values: [rowData]

@@ -11,6 +11,7 @@ export const responses = pgTable("responses", {
   intention: text("intention").notNull(),
   contactName: text("contact_name").notNull(),
   contactPhone: text("contact_phone").notNull(),
+  taxId: text("tax_id").notNull(),
   infoSource: text("info_source").array().notNull(),
   referral: text("referral"),
   notInterestedReason: text("not_interested_reason"),

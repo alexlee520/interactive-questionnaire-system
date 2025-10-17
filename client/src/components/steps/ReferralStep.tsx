@@ -9,10 +9,10 @@ interface ReferralStepProps {
 }
 
 const options = [
-  { value: "非常願意", letter: "A", label: "非常願意 - 我會積極推薦" },
-  { value: "願意", letter: "B", label: "願意 - 如果有機會會推薦" },
-  { value: "中立", letter: "C", label: "中立 - 視情況而定" },
-  { value: "不太願意", letter: "D", label: "不太願意" },
+  { value: "非常願意", letter: "A", label: "超願意！會主動推薦" },
+  { value: "願意", letter: "B", label: "願意，有機會就推" },
+  { value: "中立", letter: "C", label: "看情況再說" },
+  { value: "不太願意", letter: "D", label: "可能不太會推" },
 ];
 
 export function ReferralStep({ value, onNext, onPrev, onChange }: ReferralStepProps) {
@@ -22,13 +22,13 @@ export function ReferralStep({ value, onNext, onPrev, onChange }: ReferralStepPr
   };
 
   return (
-    <StepContainer questionNumber="第 8 步">
+    <StepContainer questionNumber="第 9 步">
       <h1 className="text-foreground text-[2.1rem] md:text-[2.1rem] leading-[1.3] font-extrabold mb-[18px]">
-        您的推薦意願調查
+        最後！會想推薦給朋友嗎？
       </h1>
       
       <p className="text-muted-foreground text-[1.075rem] leading-[1.7] mb-7">
-        您是否願意將本計畫推薦給其他商業夥伴?
+        如果有其他店家朋友，您會推薦這個專案嗎？
       </p>
       
       <div className="grid gap-3.5" role="radiogroup" aria-label="推薦意願">

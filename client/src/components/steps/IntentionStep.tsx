@@ -9,9 +9,9 @@ interface IntentionStepProps {
 }
 
 const options = [
-  { value: "interested", letter: "A", label: "聽起來很棒!我想深入了解合作細節。" },
-  { value: "more-info", letter: "B", label: "我想與專人聊聊,客製最適合我的方案。" },
-  { value: "not-interested", letter: "C", label: "暫不考慮,但我願意分享一些想法。" },
+  { value: "interested", letter: "A", label: "很有興趣！想了解更多細節" },
+  { value: "more-info", letter: "B", label: "想跟專人聊聊，看看適不適合" },
+  { value: "not-interested", letter: "C", label: "暫時不考慮，但可以聊聊" },
 ];
 
 export function IntentionStep({ value, onNext, onPrev, onChange }: IntentionStepProps) {
@@ -23,7 +23,7 @@ export function IntentionStep({ value, onNext, onPrev, onChange }: IntentionStep
   return (
     <StepContainer questionNumber="第 4 步">
       <h1 className="text-foreground text-[2.1rem] md:text-[2.1rem] leading-[1.3] font-extrabold mb-[18px]">
-        您對「商家回饋聯盟」的第一印象如何?
+        聽起來如何？有興趣嗎？
       </h1>
       
       <div className="grid gap-3.5" role="radiogroup" aria-label="合作意向">

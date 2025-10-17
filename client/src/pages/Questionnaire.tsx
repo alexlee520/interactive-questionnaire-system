@@ -10,6 +10,7 @@ import { PrivacyRejectedStep } from "@/components/steps/PrivacyRejectedStep";
 import { IntentionStep } from "@/components/steps/IntentionStep";
 import { ContactNameStep } from "@/components/steps/ContactNameStep";
 import { ContactPhoneStep } from "@/components/steps/ContactPhoneStep";
+import { TaxIdStep } from "@/components/steps/TaxIdStep";
 import { InfoSourceStep } from "@/components/steps/InfoSourceStep";
 import { ReferralStep } from "@/components/steps/ReferralStep";
 import { NotInterestedStep } from "@/components/steps/NotInterestedStep";
@@ -22,6 +23,7 @@ export interface QuestionnaireData {
   intention: string;
   contactName: string;
   contactPhone: string;
+  taxId: string;
   infoSource: string[];
   referral?: string;
   notInterestedReason?: string;
@@ -36,10 +38,11 @@ export default function Questionnaire() {
     intention: "",
     contactName: "",
     contactPhone: "",
+    taxId: "",
     infoSource: [],
   });
 
-  const totalSteps = 11;
+  const totalSteps = 12;
   const calculateProgress = () => {
     if (currentStep >= 100) return 100;
     if (currentStep === 99) return (3 / totalSteps) * 100;
@@ -128,22 +131,30 @@ export default function Questionnaire() {
             />
           )}
           {currentStep === 7 && (
+            <TaxIdStep
+              value={data.taxId}
+              onNext={nextStep}
+              onPrev={prevStep}
+              onChange={(value) => updateData("taxId", value)}
+            />
+          )}
+          {currentStep === 8 && (
             <InfoSourceStep
               value={data.infoSource}
               onNext={(nextStepNum) => {
                 if (data.intention === "interested") {
-                  goToStep(8);
+                  goToStep(9);
                 } else if (data.intention === "more-info") {
                   goToStep(100);
                 } else {
-                  goToStep(9);
+                  goToStep(10);
                 }
               }}
               onPrev={prevStep}
               onChange={(value) => updateData("infoSource", value)}
             />
           )}
-          {currentStep === 8 && (
+          {currentStep === 9 && (
             <ReferralStep
               value={data.referral || ""}
               onNext={() => goToStep(101)}
@@ -151,7 +162,7 @@ export default function Questionnaire() {
               onChange={(value) => updateData("referral", value)}
             />
           )}
-          {currentStep === 9 && (
+          {currentStep === 10 && (
             <NotInterestedStep
               value={data.notInterestedReason || ""}
               onNext={() => goToStep(102)}
