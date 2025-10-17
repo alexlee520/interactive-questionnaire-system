@@ -2,12 +2,19 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertResponseSchema } from "@shared/schema";
+import { appendResponseToSheet } from "./googleSheets";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/responses", async (req, res) => {
     try {
       const validatedData = insertResponseSchema.parse(req.body);
       const response = await storage.createResponse(validatedData);
+      
+      // Append to Google Sheets asynchronously (don't block response)
+      appendResponseToSheet(response).catch(error => {
+        console.error('Failed to append to Google Sheets:', error);
+      });
+      
       res.json(response);
     } catch (error) {
       if (error instanceof Error) {
