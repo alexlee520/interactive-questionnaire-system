@@ -1,4 +1,4 @@
-import { type Response, type InsertResponse } from "@shared/schema";
+import { type Response, type InsertResponse, type QuestionnaireData } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -19,7 +19,7 @@ export class MemStorage implements IStorage {
     const response: Response = {
       ...insertResponse,
       id,
-      submittedAt: new Date(),
+      submittedAt: new Date().toISOString(),
     };
     this.responses.set(id, response);
     return response;

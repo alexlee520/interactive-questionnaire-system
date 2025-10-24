@@ -4,18 +4,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NavigationButtons } from "./NavigationButtons";
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
-interface ContactNameStepProps extends StepProps {
+interface ContactInfoStepProps extends StepProps {
   value: string;
   onChange: (value: string) => void;
+  isSubmitting?: boolean;
 }
 
-export function ContactNameStep({ value, onChange, onNext, onPrev }: ContactNameStepProps) {
+export function ContactInfoStep({ value, onChange, onNext, onPrev, isSubmitting = false }: ContactInfoStepProps) {
   const [error, setError] = useState("");
 
   const handleNext = () => {
     if (!value.trim()) {
-      setError("姓名為必填項目。");
+      setError("聯絡方式為必填項目。");
       return;
     }
     setError("");
@@ -25,23 +27,23 @@ export function ContactNameStep({ value, onChange, onNext, onPrev }: ContactName
   return (
     <Card className="w-full max-w-lg mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl">問題 A3: 聯絡人姓名</CardTitle>
+        <CardTitle className="text-2xl">問題 A5: 聯絡方式</CardTitle>
         <CardDescription>
-          請填寫您的姓名。
+          請提供您的聯絡方式（電話或 Email）。
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          <Label htmlFor="contactName">姓名</Label>
+          <Label htmlFor="contactInfo">聯絡方式</Label>
           <Input
-            id="contactName"
+            id="contactInfo"
             type="text"
             value={value}
             onChange={(e) => {
               onChange(e.target.value);
               if (error && e.target.value.trim()) setError("");
             }}
-            placeholder="例如：王小明"
+            placeholder="例如：0912-345-678 或 example@company.com"
             required
           />
           {error && <p className="text-sm text-red-500">{error}</p>}
@@ -49,7 +51,8 @@ export function ContactNameStep({ value, onChange, onNext, onPrev }: ContactName
         <NavigationButtons
           onNext={handleNext}
           onPrev={onPrev}
-          nextText="下一步"
+          nextText={isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "完成並送出"}
+          nextDisabled={!value.trim() || isSubmitting}
         />
       </CardContent>
     </Card>

@@ -1,5 +1,5 @@
 import { google } from 'googleapis';
-import type { InsertResponse } from '@shared/schema';
+import type { Response } from '@shared/schema';
 
 let connectionSettings: any;
 
@@ -48,8 +48,9 @@ async function getUncachableGoogleSheetClient() {
   return google.sheets({ version: 'v4', auth: oauth2Client });
 }
 
-const SPREADSHEET_TITLE = 'Uber 店家新用戶獎勵專案 - 問卷回應';
-const SHEET_NAME = '回應資料';
+const SPREADSHEET_TITLE = '商家合作問卷 - 問卷回應';
+const SHEET_NAME_POTENTIAL = '潛在合作商家';
+const SHEET_NAME_EXISTING = '已合作商家';
 
 async function findOrCreateSpreadsheet() {
   const sheets = await getUncachableGoogleSheetClient();
@@ -66,56 +67,81 @@ async function findOrCreateSpreadsheet() {
     return response.data.files[0].id!;
   }
 
-  // Create new spreadsheet
+  // Create new spreadsheet with two sheets
   const createResponse = await sheets.spreadsheets.create({
     requestBody: {
       properties: {
         title: SPREADSHEET_TITLE
       },
-      sheets: [{
-        properties: {
-          title: SHEET_NAME
+      sheets: [
+        {
+          properties: {
+            title: SHEET_NAME_POTENTIAL
+          }
+        },
+        {
+          properties: {
+            title: SHEET_NAME_EXISTING
+          }
         }
-      }]
+      ]
     }
   });
 
   const spreadsheetId = createResponse.data.spreadsheetId!;
   
-  // Get sheet details to retrieve sheetId
+  // Get sheet details to retrieve sheetIds
   const getResponse = await sheets.spreadsheets.get({
     spreadsheetId: spreadsheetId
   });
   
-  const sheetId = getResponse.data.sheets?.[0]?.properties?.sheetId;
+  const sheetsProp = getResponse.data.sheets || [];
+  const potentialSheetId = sheetsProp.find(s => s.properties?.title === SHEET_NAME_POTENTIAL)?.properties?.sheetId;
+  const existingSheetId = sheetsProp.find(s => s.properties?.title === SHEET_NAME_EXISTING)?.properties?.sheetId;
   
-  if (sheetId === undefined) {
-    throw new Error('Failed to get sheetId from spreadsheet');
+  if (potentialSheetId === undefined || existingSheetId === undefined) {
+    throw new Error('Failed to get sheetIds from spreadsheet');
   }
 
-  // Set up headers
+  // Set up headers for potential partners sheet
   await sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: `${SHEET_NAME}!A1:K1`,
+    range: `${SHEET_NAME_POTENTIAL}!A1:H1`,
     valueInputOption: 'RAW',
     requestBody: {
       values: [[
         '提交時間',
-        '電子郵件',
-        '商家名稱',
-        '個資同意',
-        '合作意向',
+        '公司名稱',
         '聯絡人姓名',
-        '聯絡電話',
-        '統一編號',
-        '資訊來源',
-        '推薦意願',
-        '不考慮原因'
+        '職稱',
+        '聯絡方式',
+        '合作意願',
+        '無意願原因',
+        '其他原因'
       ]]
     }
   });
 
-  // Format headers
+  // Set up headers for existing partners sheet
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: `${SHEET_NAME_EXISTING}!A1:H1`,
+    valueInputOption: 'RAW',
+    requestBody: {
+      values: [[
+        '提交時間',
+        '合作時間',
+        '新用戶數量',
+        '整體成效評分',
+        '客戶滿意度評分',
+        '訂單增長評分',
+        '品質維持評分',
+        'ID'
+      ]]
+    }
+  });
+
+  // Format headers for both sheets
   await sheets.spreadsheets.batchUpdate({
     spreadsheetId,
     requestBody: {
@@ -123,7 +149,7 @@ async function findOrCreateSpreadsheet() {
         {
           repeatCell: {
             range: {
-              sheetId: sheetId,
+              sheetId: potentialSheetId,
               startRowIndex: 0,
               endRowIndex: 1
             },
@@ -144,10 +170,41 @@ async function findOrCreateSpreadsheet() {
         {
           autoResizeDimensions: {
             dimensions: {
-              sheetId: sheetId,
+              sheetId: potentialSheetId,
               dimension: 'COLUMNS',
               startIndex: 0,
-              endIndex: 11
+              endIndex: 8
+            }
+          }
+        },
+        {
+          repeatCell: {
+            range: {
+              sheetId: existingSheetId,
+              startRowIndex: 0,
+              endRowIndex: 1
+            },
+            cell: {
+              userEnteredFormat: {
+                backgroundColor: { red: 0, green: 0, blue: 0 },
+                textFormat: {
+                  foregroundColor: { red: 1, green: 1, blue: 1 },
+                  fontSize: 11,
+                  bold: true
+                },
+                horizontalAlignment: 'CENTER'
+              }
+            },
+            fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)'
+          }
+        },
+        {
+          autoResizeDimensions: {
+            dimensions: {
+              sheetId: existingSheetId,
+              dimension: 'COLUMNS',
+              startIndex: 0,
+              endIndex: 8
             }
           }
         }
@@ -158,12 +215,12 @@ async function findOrCreateSpreadsheet() {
   return spreadsheetId;
 }
 
-export async function appendResponseToSheet(response: InsertResponse & { submittedAt?: Date }) {
+export async function appendResponseToSheet(response: Response) {
   try {
     const sheets = await getUncachableGoogleSheetClient();
     const spreadsheetId = await findOrCreateSpreadsheet();
 
-    const submittedAt = response.submittedAt || new Date();
+    const submittedAt = response.submittedAt ? new Date(response.submittedAt) : new Date();
     const formattedDate = submittedAt.toLocaleString('zh-TW', { 
       timeZone: 'Asia/Taipei',
       year: 'numeric',
@@ -174,34 +231,61 @@ export async function appendResponseToSheet(response: InsertResponse & { submitt
       second: '2-digit'
     });
 
-    const infoSourceText = Array.isArray(response.infoSource) 
-      ? response.infoSource.join(', ') 
-      : response.infoSource;
+    // 根據身份分別處理
+    if (response.identity === 'potential') {
+      // 潛在合作商家
+      const notInterestedReasonsText = Array.isArray(response.notInterestedReasons)
+        ? response.notInterestedReasons.join(', ')
+        : '';
 
-    const rowData = [
-      formattedDate,
-      response.email,
-      response.businessName,
-      response.privacyConsent === 'yes' ? '同意' : '不同意',
-      response.intention === 'interested' ? '有興趣' : 
-        response.intention === 'not_sure' ? '不確定' : '沒興趣',
-      response.contactName || '',
-      response.contactPhone || '',
-      response.taxId || '',
-      infoSourceText || '',
-      response.referral === 'yes' ? '願意推薦' : 
-        response.referral === 'no' ? '不願意推薦' : '',
-      response.notInterestedReason || ''
-    ];
+      const rowData = [
+        formattedDate,
+        response.companyName || '',
+        response.contactName || '',
+        response.title || '',
+        response.contactInfo || '',
+        response.cooperationIntention === 'yes' ? '有意願' : '無意願',
+        notInterestedReasonsText,
+        response.notInterestedReasonOther || ''
+      ];
 
-    await sheets.spreadsheets.values.append({
-      spreadsheetId,
-      range: `${SHEET_NAME}!A:K`,
-      valueInputOption: 'RAW',
-      requestBody: {
-        values: [rowData]
-      }
-    });
+      await sheets.spreadsheets.values.append({
+        spreadsheetId,
+        range: `${SHEET_NAME_POTENTIAL}!A:H`,
+        valueInputOption: 'RAW',
+        requestBody: {
+          values: [rowData]
+        }
+      });
+    } else if (response.identity === 'existing') {
+      // 已合作商家
+      const durationMap: { [key: string]: string } = {
+        '<3m': '不到3個月',
+        '3-6m': '3–6個月',
+        '6-12m': '6–12個月',
+        '1y+': '1年以上'
+      };
+
+      const rowData = [
+        formattedDate,
+        durationMap[response.cooperationDuration || ''] || response.cooperationDuration || '',
+        response.newCustomerCount || 0,
+        response.overallEffectiveness || '',
+        response.customerSatisfactionEffect || '',
+        response.orderGrowthEffect || '',
+        response.qualityMaintenancePerformance || '',
+        response.id || ''
+      ];
+
+      await sheets.spreadsheets.values.append({
+        spreadsheetId,
+        range: `${SHEET_NAME_EXISTING}!A:H`,
+        valueInputOption: 'RAW',
+        requestBody: {
+          values: [rowData]
+        }
+      });
+    }
 
     console.log('Successfully appended response to Google Sheets');
     return { success: true, spreadsheetId };
@@ -210,3 +294,4 @@ export async function appendResponseToSheet(response: InsertResponse & { submitt
     throw error;
   }
 }
+
